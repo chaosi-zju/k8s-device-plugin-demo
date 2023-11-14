@@ -1,11 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-kubectl delete -f daemonset.yaml -f consumer.yaml
+GOOS=linux GOARCH=amd64 go build -o ./k8s-device-plugin-demo
 
 docker build . -t k8s-device-plugin-demo:0.0.1
-
-kind load docker-image k8s-device-plugin-demo:0.0.1
-
-kubectl create -f daemonset.yaml
-
-kubectl create -f consumer.yaml

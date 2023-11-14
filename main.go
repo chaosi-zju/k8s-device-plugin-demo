@@ -20,11 +20,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
-
-	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -36,7 +36,7 @@ import (
 )
 
 const (
-	resourceName = "example.com/resource"
+	resourceName = "karmada.io/gpu"
 
 	grpcAddress    = "unix:///var/lib/kubelet/pod-resources/kubelet.sock"
 	grpcBufferSize = 4 * 1024 * 1024
@@ -45,12 +45,7 @@ const (
 )
 
 var (
-	devs = []*pluginapi.Device{
-		{ID: "Dev_1", Health: pluginapi.Healthy},
-		{ID: "Dev_2", Health: pluginapi.Healthy},
-		{ID: "Dev_3", Health: pluginapi.Healthy},
-		{ID: "Dev_4", Health: pluginapi.Healthy},
-	}
+	devs    []*pluginapi.Device
 	metrics = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "pods_per_devices",
 		Help: "Total number of pods per device",
@@ -136,6 +131,16 @@ func stubAllocFunc(r *pluginapi.AllocateRequest, devs map[string]pluginapi.Devic
 }
 
 func main() {
+
+	deviceCnt := 4
+	envDeviceCnt, _ := strconv.Atoi(os.Getenv("device-cnt"))
+	if envDeviceCnt > 0 {
+		deviceCnt = envDeviceCnt
+	}
+
+	for i := 1; i <= deviceCnt; i++ {
+		devs = append(devs, &pluginapi.Device{ID: fmt.Sprintf("Dev_%d", i), Health: pluginapi.Healthy})
+	}
 
 	pluginSocksDir := pluginapi.DevicePluginPath //os.Getenv("PLUGIN_SOCK_DIR")
 	klog.Infof("pluginSocksDir: %s", pluginSocksDir)
