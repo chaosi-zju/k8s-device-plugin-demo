@@ -1,6 +1,6 @@
 module github.com/ghokun/k8s-device-plugin-demo
 
-go 1.17
+go 1.20
 
 replace k8s.io/api => k8s.io/api v0.20.7
 
